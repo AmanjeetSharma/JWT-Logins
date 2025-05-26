@@ -41,9 +41,9 @@ const registerUser = asyncHandler(async (req, res) => {
             fs.unlinkSync(req.files.avatar[0].path);
             console.log("🗑️  Removed avatar image from localServer due to → existing user.");
         }
-        if (req?.files?.coverImage?.[0]?.path) {
-            fs.unlinkSync(req.files.coverImage[0].path);
-            console.log("🗑️  Removed cover image from localServer due to → existing user.");
+        if (req?.files?.banner?.[0]?.path) {
+            fs.unlinkSync(req.files.banner[0].path);
+            console.log("🗑️  Removed banner from localServer due to → existing user.");
         }
 
         if (existedUser.username === username) {
@@ -54,20 +54,19 @@ const registerUser = asyncHandler(async (req, res) => {
         }
     }
 
-    const avatarLocalPath = req?.files?.avatar[0]?.path;
-    const coverImageLocalPath = req?.files?.coverImage?.[0]?.path;
-    if (!avatarLocalPath) {
-        throw new ApiError(400, "Missing required field: avatar image");
-    }
+    const avatarLocalPath = req?.files?.avatar?.[0]?.path;
+    const bannerLocalPath = req?.files?.banner?.[0]?.path;
 
-    const avatar = await uploadOnCloudinary(avatarLocalPath, "EchoStream/users/avatars");
-    // const coverImage = await uploadOnCloudinary(coverImageLocalPath, "EchoStream/users/coverImages");
-    if (!avatar) {
-        throw new ApiError(500, "⚠️ Error uploading Avatar-image");
+    // const avatar = await uploadOnCloudinary(avatarLocalPath, "JWT-Logins/users/avatars");
+    // const banner = await uploadOnCloudinary(bannerLocalPath, "JWT-Logins/users/banners");
+    
+    let banner = null;
+    let avatar = null;
+    if (avatarLocalPath) {
+        avatar = await uploadOnCloudinary(avatarLocalPath, "JWT-Logins/users/avatars");
     }
-    let coverImage = null;
-    if (coverImageLocalPath) {
-        coverImage = await uploadOnCloudinary(coverImageLocalPath, "EchoStream/users/coverImages");
+    if (bannerLocalPath) {
+        banner = await uploadOnCloudinary(bannerLocalPath, "JWT-Logins/users/banner");
     }
 
     const user = await User.create({
@@ -75,13 +74,13 @@ const registerUser = asyncHandler(async (req, res) => {
         username: username.toLowerCase(),
         email: email.toLowerCase(),
         password,
-        avatar: avatar.url,
-        coverImage: coverImage?.url || "",
+        avatar: avatar?.url || "",
+        banner: banner?.url || "",
     })
 
     //by default all the fields are selected, so we write those fields which we don't want
     const isUserCreated = await User.findById(user._id).select("-password -refreshToken");
-
+    console.log(isUserCreated);
     if (!isUserCreated) {
         throw new ApiError(500, "Error while registering the user");
     }
@@ -196,7 +195,7 @@ export { registerUser, loginUser, logoutUser };
 // get user details from frontend
 // validate the data
 // check if user already exists- username or email
-// check for images and cover image, check for avatar
+// check for images and banner , check for avatar
 // upload images to cloudinary, avatar
 // create a user object- create an entry in the database
 // remove password and refresh token from the response

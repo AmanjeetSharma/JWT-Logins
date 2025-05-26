@@ -14,7 +14,7 @@ app.get("/", (req, res) => {
 
 connectDB()
     .then(() => {
-        app.listen(process.env.PORT || 8000, () => {
+        app.listen(process.env.PORT || 6000, () => {
             console.log(chalk.yellowBright(`Server is live! 🚀`));
             console.log(chalk.magentaBright(`🌐 Server is running on port:`));
             console.log(chalk.cyanBright(`http://localhost:${process.env.PORT || 6000}`));
